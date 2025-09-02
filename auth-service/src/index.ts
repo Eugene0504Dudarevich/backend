@@ -1,21 +1,25 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv"
-import authRoutes from "./routes/auth";
+import express from 'express'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import dotenv from 'dotenv'
+import authRoutes from './routes/auth'
 
-dotenv.config();
+dotenv.config()
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000
 
-const app = express();
+const app = express()
 
-app.use(cors({
+app.use(
+  cors({
     origin: 'http://localhost:3000',
     credentials: true
-}));
-app.use(express.json());
-app.use('/api', authRoutes);
+  })
+)
+app.use(express.json())
+app.use(cookieParser())
+app.use('/api', authRoutes)
 
 app.listen(PORT, () => {
-    console.log(`Authentication service is running on port ${PORT}`);
-});
+  console.log(`Authentication service is running on port ${PORT}`)
+})

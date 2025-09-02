@@ -1,17 +1,43 @@
-import prisma from "../db";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import prisma from '../db'
+import { fieldError } from '../utils'
 
-export const registerUser = async (fullName: string, email: string, password: string, phoneNumber: string) => {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret'
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret'
 
-    if (existingUser) throw new Error ("User with this email already exist");
+export const registerUser = async (
+  fullName: string,
+  email: string,
+  password: string,
+  phoneNumber: string
+) => {
+  const existingUser = await prisma.user.findUnique({ where: { email } })
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+  if (existingUser) throw new Error('User with this email already exist')
 
-    return await prisma.user.create({ data: {
-        full_name: fullName,
-        email,
-        phone_number: phoneNumber,
-        password: hashedPassword,
-    }});
+  const hashedPassword = await bcrypt.hash(password, 10)
+
+  return await prisma.user.create({
+    data: {
+      full_name: fullName,
+      email,
+      phone_number: phoneNumber,
+      password: hashedPassword
+    }
+  })
+}
+
+export const loginUser = async (email: string, password: string) => {
+  const user = await prisma.user.findUnique({ where: { email } })
+
+  if (!user) throw fieldError('email', `User with such email doesn't exist`)
+  const isPasswordMatch = await bcrypt.compare(password, user.password)
+
+  if (!isPasswordMatch) throw fieldError('password', 'You entered incorrect password')
+
+  const accessToken = jwt.sign({ userId: user.id }, JWT_ACCESS_SECRET, { expiresIn: '15m' })
+  const refreshToken = jwt.sign({ userId: user.id }, JWT_REFRESH_SECRET, { expiresIn: '7d' })
+
+  return { accessToken, refreshToken }
 }
