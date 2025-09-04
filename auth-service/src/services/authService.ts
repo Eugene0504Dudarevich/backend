@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import prisma from '../db'
-import { fieldError } from '../utils'
+import { createError } from '../utils'
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret'
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret'
@@ -31,10 +31,10 @@ export const registerUser = async (
 export const loginUser = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({ where: { email } })
 
-  if (!user) throw fieldError('email', `User with such email doesn't exist`)
+  if (!user) throw createError(401, 'Invalid credentials')
   const isPasswordMatch = await bcrypt.compare(password, user.password)
 
-  if (!isPasswordMatch) throw fieldError('password', 'You entered incorrect password')
+  if (!isPasswordMatch) throw createError(401, 'Invalid credentials')
 
   const accessToken = jwt.sign({ userId: user.id }, JWT_ACCESS_SECRET, { expiresIn: '15m' })
   const refreshToken = jwt.sign({ userId: user.id }, JWT_REFRESH_SECRET, { expiresIn: '7d' })

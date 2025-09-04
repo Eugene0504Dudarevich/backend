@@ -1,8 +1,8 @@
-type FieldError = {
-  field: string
-  message: string
-}
+import { CustomError } from '../types'
 
-export const fieldError = (field: string, message: string): FieldError => {
-  return { field, message }
+export const createError = (statusCode: number, message: string): CustomError => {
+  const error = new Error(message) as CustomError
+  error.statusCode = statusCode
+
+  return error
 }

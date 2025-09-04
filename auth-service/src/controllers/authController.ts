@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { loginUser, registerUser } from '../services'
+import { CustomError } from '../types'
 
 export const register = async (request: Request, response: Response) => {
   try {
@@ -27,8 +28,9 @@ export const login = async (request: Request, response: Response) => {
       refreshToken: refreshToken
     })
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'field' in error && 'message' in error) {
-      return response.status(400).json(error)
+    const err = error as CustomError
+    if (err.statusCode) {
+      return response.status(err.statusCode).json({ message: err.message })
     }
 
     return response.status(500).json({ message: 'Internal server error' })
