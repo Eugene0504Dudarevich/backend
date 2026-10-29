@@ -23,7 +23,6 @@ export const login = async (request: Request, response: Response) => {
 
     const { accessToken, refreshToken } = await loginUser(email, password)
     response.status(200).json({
-      message: 'User logged in successfully',
       accessToken: accessToken,
       refreshToken: refreshToken
     })

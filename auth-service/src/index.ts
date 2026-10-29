@@ -3,6 +3,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth'
+import testRoutes from './routes/test'
 
 dotenv.config()
 
@@ -19,6 +20,7 @@ app.use(
 app.use(express.json())
 app.use(cookieParser())
 app.use('/api', authRoutes)
+app.use('/api', testRoutes)
 
 app.listen(PORT, () => {
   console.log(`Authentication service is running on port ${PORT}`)
